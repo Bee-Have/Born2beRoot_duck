@@ -1,0 +1,4 @@
+USE DEBIAN
+with debian and LVM create volumes
+	LVM = create two partitions chiffres
+in the process use kdump for the error management and return error
