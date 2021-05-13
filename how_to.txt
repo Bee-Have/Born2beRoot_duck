@@ -1,4 +1,14 @@
-USE DEBIAN
-with debian and LVM create volumes
-	LVM = create two partitions chiffres
-in the process use kdump for the error management and return error
+download ISO from debian
+
+- create new VM on virtualbox
+- configure it so it is a terminal format
+- run VM
+- use Aptitude to install required things
+	- aptitude will install the required and side required packages
+	- you can also ask it questions so that's nice
+- install the required things on it
+	- LVM = for partitioning
+	- SSH = on port 4242 only
+	- UFW = for pare-feu (only open port 4242)
+	- sudo
+	- SElinux ???
