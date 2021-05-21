@@ -1,14 +1,106 @@
 download ISO from debian
 
 - create new VM on virtualbox
-- configure it so it is a terminal format
 - run VM
-- use Aptitude to install required things
-	- aptitude will install the required and side required packages
-	- you can also ask it questions so that's nice
+- configure the partitioning on multiple partitions
+- setup root user
+- setup amarini- user
+- configure it so it is a terminal format
+- access root user
 - install the required things on it
-	- LVM = for partitioning
-	- SSH = on port 4242 only
-	- UFW = for pare-feu (only open port 4242)
-	- sudo
-	- SElinux ???
+	0- vim
+	1- sudo
+	2- SSH
+		- switch port after installing
+	3- UFW = for pare-feu (only open port 4242)
+	4- SElinux
+
+(- use Aptitude to install required things
+	- aptitude will install the required and side required packages
+	- you can also ask it questions so that's nice)
+
+
+--------------------------------------------------
+
+NAMING
+
+VM -> amarini-42
+
+utilisateur root -> root
+	mdp -> root
+
+utilisateur amarini-
+	mdp -> amarini-
+
+phrase chiffrement -> root
+
+create group using = 
+	sudo vgcreate user42 /dev/sda2
+
+-----------------------------------------------
+
+USERS GROUPS
+
+create group :
+	sudo groupadd GROUP-NAME
+
+add user to group :
+	sudo usermod -a -G GROUP-NAME USER
+
+create user :
+	sudo useradd -m USER
+	sudo passwd USER
+
+WHY DOES MY FUCKING VM ASK ME TO RE-INSTALL EVERYTHING EVERYTIME I CLOSE IS WITHOUT SAVING
+HAAAAAAAAAAAAAAAAAA
+
+------------------------------------------
+
+PASSWORDS
+
+-	"Votre mot de passe devra expirer tous les 30 jours."
+-	"Le nombre minimum de jours avant de pouvoir modifier un mot de passe sera
+configuré à 2."
+-	"L’utilisateur devra recevoir un avertissement 7 jours avant que son mot de passe
+n’expire."
+-	"Votre mot de passe sera de 10 caractères minimums dont une majuscule et un
+chiffre, et ne devra pas comporter plus de 3 caractères identiques consécutifs."
+-	"Le mot de passe ne devra pas comporter le nom de l’utilisateur."
+-	"Le mot de passe devra comporter au moins 7 caractères qui ne sont pas présents
+dans l’ancien mot de passe."
+-	"L’authentification en utilisant sudo sera limitée à 3 essais en cas de mot de passe
+erroné."
+
+--
+
+sudo vim /etc/pam.d/common-password
+find line :
+	password [success=2 default=ignore] pam_unix.so obscure sha512
+LENGTH : 10
+	add "minlen=NUMBER"
+UPPERCASE : 1
+	add "ucredit=NUMBER"
+NUMBER : 1
+	add "dcredit=NUMBER"
+OLD PASSSWORD : 1
+	add "remember=NUMBER"
+MAX OLD PASSWORD REPEAT : 3
+	add "maxrepeat=NUMBER"
+NO USERNAME : not zero
+	add "usercheck=NUMBER"
+	add "reject_username"
+
+(gotta check this, i don't really get it)
+(actually no need to do this, this is already enforced by the vm)
+warning before password expire : 7
+	sudo chage -W <days> <username>
+
+--
+
+sudo vim /etc/login.defs
+EXPIRATION DAYS : 30
+	change "PASS_MAX_DAYS NUMBER"
+MIN CHANGE DAYS : 2
+	change "PASS_MIN_DAYS NUMBER"
+WARNING CHANCES : 3
+	change "PASS_WARN_AGE NUMBER"
