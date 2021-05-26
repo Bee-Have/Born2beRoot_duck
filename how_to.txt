@@ -11,14 +11,28 @@ download ISO from debian
 	0- vim
 	1- sudo
 	2- SSH
-		- switch port after installing
+		- "apt-get install net-tools"
+		- "sudo apt install openssh-server"
+		- "sudo systemctl status sshd"
+		- "vim /etc/ssh/sshd_config" -> change line with port 22 to 4242
+		- "service sshd restart"
+		- "netstat -tulpn | grep 4242"
 	3- UFW = for pare-feu (only open port 4242)
+		- "sudo apt install ufw"
+		- "sudo ufw status verbose"
+		- "sudo ufw allow 4242/tcp"
+		- "sudo ufw app info OpenSSH"
+		- "sudo ufw enable"
 	4- SElinux
+		- "apt-get install selinux-basics selinux-policy-default auditd"
+		- "selinux-activate"
 
 (- use Aptitude to install required things
 	- aptitude will install the required and side required packages
 	- you can also ask it questions so that's nice)
 
+test ssh port :
+"netstat -tulpn | grep PORT_NUMBER"
 
 --------------------------------------------------
 
@@ -34,12 +48,14 @@ utilisateur amarini-
 
 phrase chiffrement -> root
 
-create group using = 
-	sudo vgcreate user42 /dev/sda2
-
 -----------------------------------------------
 
 USERS GROUPS
+
+check groups :
+	groups
+check groups for user :
+	groups USER_NAME
 
 create group :
 	sudo groupadd GROUP-NAME
@@ -51,27 +67,9 @@ create user :
 	sudo useradd -m USER
 	sudo passwd USER
 
-WHY DOES MY FUCKING VM ASK ME TO RE-INSTALL EVERYTHING EVERYTIME I CLOSE IS WITHOUT SAVING
-HAAAAAAAAAAAAAAAAAA
-
 ------------------------------------------
 
 PASSWORDS
-
--	"Votre mot de passe devra expirer tous les 30 jours."
--	"Le nombre minimum de jours avant de pouvoir modifier un mot de passe sera
-configuré à 2."
--	"L’utilisateur devra recevoir un avertissement 7 jours avant que son mot de passe
-n’expire."
--	"Votre mot de passe sera de 10 caractères minimums dont une majuscule et un
-chiffre, et ne devra pas comporter plus de 3 caractères identiques consécutifs."
--	"Le mot de passe ne devra pas comporter le nom de l’utilisateur."
--	"Le mot de passe devra comporter au moins 7 caractères qui ne sont pas présents
-dans l’ancien mot de passe."
--	"L’authentification en utilisant sudo sera limitée à 3 essais en cas de mot de passe
-erroné."
-
---
 
 sudo vim /etc/pam.d/common-password
 find line :
@@ -84,16 +82,17 @@ NUMBER : 1
 	add "dcredit=NUMBER"
 OLD PASSSWORD : 1
 	add "remember=NUMBER"
-MAX OLD PASSWORD REPEAT : 3
-	add "maxrepeat=NUMBER"
+MAX OLD PASSWORD REPEAT : 3 - 7
+	add "maxrepeat=NUMBER" : 3
+	add "difok=NUMBER" : 7
 NO USERNAME : not zero
 	add "usercheck=NUMBER"
 	add "reject_username"
 
+(don't actually need this because it is automatically enabled)
 (gotta check this, i don't really get it)
 (actually no need to do this, this is already enforced by the vm)
 warning before password expire : 7
-	sudo chage -W <days> <username>
 
 --
 
@@ -104,3 +103,68 @@ MIN CHANGE DAYS : 2
 	change "PASS_MIN_DAYS NUMBER"
 WARNING CHANCES : 3
 	change "PASS_WARN_AGE NUMBER"
+
+---------------------------------------
+
+SAVE SUDO COMMANDS
+
+change "syslog" file
+file is usually "/var/log/auth.log"
+STEP BY STEP :
+	open = "/etc/sudoers"
+	add "Defaults	logfile="/var/log/sudo.log""
+	(add it over other 'Defaults')
+	save and close
+	change "secure_path" to -> "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
+
+------------------------------------------
+
+MONITORING
+
+- architecture - kernel
+	"uname -a"
+- processeurs physiques
+	"grep "physical id" /proc/cpuinfo | sort | uniq | wc -l"
+- processeurs virtuels
+	cat /proc/cpuinfo | grep -c "cpu cores"
+- memoire vive dispo - taux d'utilisation memoire vive in %
+	memfree=$(grep "MemFree" /proc/meminfo | grep -o -E '[0-9]+')
+	memtotal=$(grep "MemTotal" /proc/meminfo | grep -o -E '[0-9]+')
+	mempercent=$(free | grep Mem | awk '{print $3/$2 * 100.0}')
+- memoire dispo - taux d'utilisation memoire in %
+	disktotal=$(df -h --output=size --total | awk 'END {print $1}')
+- taux d'utilisation processeurs - all in %
+- date/heure dernier demarrage
+- lvm active or not
+- nombre de connections actives
+- nombre utilisateurs utilisant le serveu
+- addresse IPv4 du serveur - addresse mac du serveur
+- nombre de commande sudo executees
+
+use "wall [option] [<file>|<message>]"
+'wall' sends message to ALL users so no matter the user, the message will be received
+
+use 'wall' as argument to have multi-line message
+
+start with : "#!/bin/bash"
+(should also give permision with chmod before)
+(this gives permision of su to the script)
+
+use :
+while true
+do
+	wall instructions
+	sleep 600
+done
+
+--
+#!/bin/bash
+memfree=$(grep "MemFree" /proc/meminfo | grep -o -E '[0-9]+')
+memtotal=$(grep "MemTotal" /proc/meminfo | grep -o -E '[0-9]+')
+memused=
+while true
+do
+	(stuff here)
+	sleep 600
+done
+--
