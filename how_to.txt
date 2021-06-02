@@ -121,6 +121,10 @@ STEP BY STEP :
 
 MONITORING
 
+ps -aux -> to check if process not done
+
+script is here = "/usr/local/bin"
+
 - architecture - kernel
 	"uname -a"
 - processeurs physiques
@@ -132,14 +136,29 @@ MONITORING
 	memtotal=$(grep "MemTotal" /proc/meminfo | grep -o -E '[0-9]+')
 	mempercent=$(free | grep Mem | awk '{print $3/$2 * 100.0}')
 - memoire dispo - taux d'utilisation memoire in %
-	disktotal=$(df -h --output=size --total | awk 'END {print $1}')
-- taux d'utilisation processeurs - all in %
+	disktotal=$(df -BG | awk '{print $2}' | grep -o '[0-9]\+' | paste -sd+ - | bc)
+	diskfree=$(df -BG | awk '{print $4}' |grep -o '[0-9]\+' | paste -sd+ - | bc)
+	diskused=$(df -BG | awk '{print $3}' | grep -o '[0-9]\+' | paste -sd+ - | bc)
+	diskusedpercent='($diskused * 100) / $disktotal'
+- taux d'utilisation processeurs - in %
+	grep 'cpu ' /proc/stat | awk '{print ($2 + $4) * 100 / ($2 + $4 + $5)}'
 - date/heure dernier demarrage
+	who -b
 - lvm active or not
+	if [[ $(lvm pvdisplay | grep -q "Physical volume") ]]; then
+		echo "yes" | wall
+	else
+		echo "no" | wall
+	fi
 - nombre de connections actives
-- nombre utilisateurs utilisant le serveu
+	netstat -an | grep CONNECTE | wc -l
+- nombre utilisateurs utilisant le serveur
+	users | wc -w
 - addresse IPv4 du serveur - addresse mac du serveur
+	IP : hostname -I
+	M.A.C : cat /sys/class/enp0s3/address
 - nombre de commande sudo executees
+	grep COMMAND /var/log/sudo/sudo.log | wc -l
 
 use "wall [option] [<file>|<message>]"
 'wall' sends message to ALL users so no matter the user, the message will be received
@@ -161,10 +180,37 @@ done
 #!/bin/bash
 memfree=$(grep "MemFree" /proc/meminfo | grep -o -E '[0-9]+')
 memtotal=$(grep "MemTotal" /proc/meminfo | grep -o -E '[0-9]+')
-memused=
+memused=$(free | grep Mem | awk '{print $3/$2 * 100.0}')
+disktotal=$(df -BG | awk '{print $2}' | grep -o '[0-9]\+' | paste -sd+ - | bc)
+diskfree=$(df -BG | awk '{print $4}' |grep -o '[0-9]\+' | paste -sd+ - | bc)
+diskused=$(df -BG | awk '{print $3}' | grep -o '[0-9]\+' | paste -sd+ - | bc)
+diskusedpercent='($diskused * 100) / $disktotal'
 while true
 do
-	(stuff here)
+	echo "#Architecture : $(uname -a)\n" | wall
+	echo "#CPU Physical : $(grep "physical id" /proc/cpuinfo | sort | uniq | wc -l)\n" | wall
+	echo "#CPU Virtual : $(cat /proc/cpuinfo | grep -c "cpu cores")\n" | wall
+	echo "#Memory Usage : $memfree/$memtotalKb ($memused%)" | wall
+	echo "#Disk Usage : $diskfree/$disktotal ($diskusedpercent%)" | wall
+	echo "#CPU Load : $(grep 'cpu ' /proc/stat | awk '{print ($2 + $4) * 100 / ($2 + $4 + $5)}')" | wall
+	echo "#Last boot : $(who -b)" | wall
+	echo "#LVM use : " | wall
+	if [[ $(lvm pvdisplay | grep -q "Physical volume") ]]; then
+		echo "yes" | wall
+	else
+		echo "no" | wall
+	fi
+	echo "#TCP Connections : $(netstat -an | grep CONNECTE | wc -l) ESTABLISHED" | wall
+	echo "#User loged : $(user | wc -w)" | wall
+	echo "#Network : IP $(hostname -I) ($(cat /sys/class/enp0s3/address))" | wall
+	echo "#Sudo : $(grep COMMAND /var/log/sudo/sudo.log | wc -l) cmd calls" | wall
 	sleep 600
 done
 --
+
+--------------------------------------------
+
+CHECKS 
+
+
+
