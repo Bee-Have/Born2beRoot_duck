@@ -20,9 +20,10 @@ download ISO from debian
 	3- UFW = for pare-feu (only open port 4242)
 		- "sudo apt install ufw"
 		- "sudo ufw status verbose"
-		- "sudo ufw allow 4242/tcp"
+		- "sudo ufw allow 4242"
 		- "sudo ufw app info OpenSSH"
 		- "sudo ufw enable"
+		- "sudo ufw status verbose"
 	4- SElinux
 		- "apt-get install selinux-basics selinux-policy-default auditd"
 		- "selinux-activate"
@@ -114,14 +115,12 @@ STEP BY STEP :
 	open = "/etc/sudoers"
 	add "Defaults	logfile="/var/log/sudo.log""
 	(add it over other 'Defaults')
+	change "secure_path" to "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
 	save and close
-	change "secure_path" to -> "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
 
 ------------------------------------------
 
 MONITORING
-
-ps -aux -> to check if process not done
 
 script is here = "/usr/local/bin"
 
@@ -156,13 +155,12 @@ script is here = "/usr/local/bin"
 	users | wc -w
 - addresse IPv4 du serveur - addresse mac du serveur
 	IP : hostname -I
-	M.A.C : cat /sys/class/enp0s3/address
+	M.A.C : cat /sys/class/net/enp0s3/address
 - nombre de commande sudo executees
 	grep COMMAND /var/log/sudo/sudo.log | wc -l
 
 use "wall [option] [<file>|<message>]"
 'wall' sends message to ALL users so no matter the user, the message will be received
-
 use 'wall' as argument to have multi-line message
 
 start with : "#!/bin/bash"
@@ -202,15 +200,9 @@ do
 	fi
 	echo "#TCP Connections : $(netstat -an | grep CONNECTE | wc -l) ESTABLISHED" | wall
 	echo "#User loged : $(user | wc -w)" | wall
-	echo "#Network : IP $(hostname -I) ($(cat /sys/class/enp0s3/address))" | wall
+	echo "#Network : IP $(hostname -I) ($(cat /sys/class/net/enp0s3/address))" | wall
 	echo "#Sudo : $(grep COMMAND /var/log/sudo/sudo.log | wc -l) cmd calls" | wall
-	sleep 600
 done
 --
 
 --------------------------------------------
-
-CHECKS 
-
-
-
