@@ -65,8 +65,11 @@ add user to group :
 	sudo usermod -a -G GROUP-NAME USER
 
 create user :
-	sudo useradd -m USER
+	sudo useradd USER
 	sudo passwd USER
+
+delete user :
+	sudo userdel USER
 
 ------------------------------------------
 
@@ -77,9 +80,9 @@ find line :
 	password [success=2 default=ignore] pam_unix.so obscure sha512
 LENGTH : 10
 	add "minlen=NUMBER"
-UPPERCASE : 1
+UPPERCASE : -1
 	add "ucredit=NUMBER"
-NUMBER : 1
+NUMBER : -1
 	add "dcredit=NUMBER"
 OLD PASSSWORD : 1
 	add "remember=NUMBER"
@@ -89,6 +92,8 @@ MAX OLD PASSWORD REPEAT : 3 - 7
 NO USERNAME : not zero
 	add "usercheck=NUMBER"
 	add "reject_username"
+
+password	required	pam_pwhistory.so	blahblahblah
 
 (don't actually need this because it is automatically enabled)
 (gotta check this, i don't really get it)
@@ -135,22 +140,23 @@ script is here = "/usr/local/bin"
 	memtotal=$(grep "MemTotal" /proc/meminfo | grep -o -E '[0-9]+')
 	mempercent=$(free | grep Mem | awk '{print $3/$2 * 100.0}')
 - memoire dispo - taux d'utilisation memoire in %
-	disktotal=$(df -BG | awk '{print $2}' | grep -o '[0-9]\+' | paste -sd+ - | bc)
-	diskfree=$(df -BG | awk '{print $4}' |grep -o '[0-9]\+' | paste -sd+ - | bc)
-	diskused=$(df -BG | awk '{print $3}' | grep -o '[0-9]\+' | paste -sd+ - | bc)
-	diskusedpercent='($diskused * 100) / $disktotal'
+	disktotal=$(df | awk '{print $2}' | grep -o '[0-9]\+' | paste -sd+ - | bc)
+	diskfree=$(df | awk '{print $4}' |grep -o '[0-9]\+' | paste -sd+ - | bc)
+	diskused=$(df | awk '{print $3}' | grep -o '[0-9]\+' | paste -sd+ - | bc)
+	diskusedpercent=$((diskused * 100 / disktotal))
 - taux d'utilisation processeurs - in %
 	grep 'cpu ' /proc/stat | awk '{print ($2 + $4) * 100 / ($2 + $4 + $5)}'
 - date/heure dernier demarrage
 	who -b
 - lvm active or not
-	if [[ $(lvm pvdisplay | grep -q "Physical volume") ]]; then
+	if sudo lvm pvdisplay | grep -q "Physical volume"
+	then
 		echo "yes" | wall
 	else
 		echo "no" | wall
 	fi
 - nombre de connections actives
-	netstat -an | grep CONNECTE | wc -l
+	netstat -an | grep ESTABLISHED | wc -l
 - nombre utilisateurs utilisant le serveur
 	users | wc -w
 - addresse IPv4 du serveur - addresse mac du serveur
@@ -206,3 +212,19 @@ done
 --
 
 --------------------------------------------
+
+CHANGE HOSTNAME
+
+momentarly = "hostname NEW-HOSTNAME"
+
+permanently = "vim /etc/hostname"
+
+-------------------------------------------
+
+CHECKS 
+
+-lsblk
+sudo /usr/sbin/ufw status
+sudo /usr/sbin/aa-status
+head -n 2 /etc/os-release
+
