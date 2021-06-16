@@ -194,3 +194,9 @@ sudo /usr/sbin/aa-status
 the OS used
 head -n 2 /etc/os-release
 
+-----------------------------------------
+
+SIGNATURE :
+
+0f522e316e9f0c94278db3fbf6bea34430f0e93e
+
