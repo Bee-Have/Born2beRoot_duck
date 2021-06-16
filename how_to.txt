@@ -147,7 +147,7 @@ script is here = "/usr/local/bin"
 - taux d'utilisation processeurs - in %
 	grep 'cpu ' /proc/stat | awk '{print ($2 + $4) * 100 / ($2 + $4 + $5)}'
 - date/heure dernier demarrage
-	who -b
+	who -b | cut -c 30-
 - lvm active or not
 	if sudo lvm pvdisplay | grep -q "Physical volume"
 	then
@@ -173,44 +173,6 @@ start with : "#!/bin/bash"
 (should also give permision with chmod before)
 (this gives permision of su to the script)
 
-use :
-while true
-do
-	wall instructions
-	sleep 600
-done
-
---
-#!/bin/bash
-memfree=$(grep "MemFree" /proc/meminfo | grep -o -E '[0-9]+')
-memtotal=$(grep "MemTotal" /proc/meminfo | grep -o -E '[0-9]+')
-memused=$(free | grep Mem | awk '{print $3/$2 * 100.0}')
-disktotal=$(df -BG | awk '{print $2}' | grep -o '[0-9]\+' | paste -sd+ - | bc)
-diskfree=$(df -BG | awk '{print $4}' |grep -o '[0-9]\+' | paste -sd+ - | bc)
-diskused=$(df -BG | awk '{print $3}' | grep -o '[0-9]\+' | paste -sd+ - | bc)
-diskusedpercent='($diskused * 100) / $disktotal'
-while true
-do
-	echo "#Architecture : $(uname -a)\n" | wall
-	echo "#CPU Physical : $(grep "physical id" /proc/cpuinfo | sort | uniq | wc -l)\n" | wall
-	echo "#CPU Virtual : $(cat /proc/cpuinfo | grep -c "cpu cores")\n" | wall
-	echo "#Memory Usage : $memfree/$memtotalKb ($memused%)" | wall
-	echo "#Disk Usage : $diskfree/$disktotal ($diskusedpercent%)" | wall
-	echo "#CPU Load : $(grep 'cpu ' /proc/stat | awk '{print ($2 + $4) * 100 / ($2 + $4 + $5)}')" | wall
-	echo "#Last boot : $(who -b)" | wall
-	echo "#LVM use : " | wall
-	if [[ $(lvm pvdisplay | grep -q "Physical volume") ]]; then
-		echo "yes" | wall
-	else
-		echo "no" | wall
-	fi
-	echo "#TCP Connections : $(netstat -an | grep CONNECTE | wc -l) ESTABLISHED" | wall
-	echo "#User loged : $(user | wc -w)" | wall
-	echo "#Network : IP $(hostname -I) ($(cat /sys/class/net/enp0s3/address))" | wall
-	echo "#Sudo : $(grep COMMAND /var/log/sudo/sudo.log | wc -l) cmd calls" | wall
-done
---
-
 --------------------------------------------
 
 CHANGE HOSTNAME
@@ -223,8 +185,12 @@ permanently = "vim /etc/hostname"
 
 CHECKS 
 
+architecture
 -lsblk
+SSH port
 sudo /usr/sbin/ufw status
+is AppArmor loaded ?
 sudo /usr/sbin/aa-status
+the OS used
 head -n 2 /etc/os-release
 
