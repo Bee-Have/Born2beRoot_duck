@@ -183,10 +183,23 @@ permanently = "vim /etc/hostname"
 
 -------------------------------------------
 
+UFW RULES
+
+ADD RULE :
+sudo ufw allow NUMBER
+DENY
+sudo ufw deny NUMBER
+DELETE
+sudo ufw delete LINE NUMBER
+
+-------------------------------------------
+
 CHECKS 
 
 architecture
 -lsblk
+Connection SSH
+ssh -p 4242 amarini-@127.0.0.1
 SSH port
 sudo /usr/sbin/ufw status
 is AppArmor loaded ?
@@ -197,6 +210,3 @@ head -n 2 /etc/os-release
 -----------------------------------------
 
 SIGNATURE :
-
-0f522e316e9f0c94278db3fbf6bea34430f0e93e
-
