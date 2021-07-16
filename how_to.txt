@@ -186,9 +186,9 @@ permanently = "vim /etc/hostname"
 UFW RULES
 
 ADD RULE :
-sudo ufw allow NUMBER
+sudo ufw allow PORT
 DENY
-sudo ufw deny NUMBER
+sudo ufw deny PORT
 DELETE
 sudo ufw delete LINE NUMBER
 
